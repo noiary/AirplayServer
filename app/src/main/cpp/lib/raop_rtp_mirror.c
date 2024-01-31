@@ -352,6 +352,8 @@ raop_rtp_mirror_thread(void *arg)
                     h264_data.data = payload;
                     h264_data.frame_type = 1;
                     h264_data.pts = pts;
+                    h264_data.width = 0;
+                    h264_data.height = 0;
                     raop_rtp_mirror->callbacks.video_process(raop_rtp_mirror->callbacks.cls, &h264_data);
                     free(payload_in);
                     free(payload);
@@ -418,6 +420,8 @@ raop_rtp_mirror_thread(void *arg)
                         h264_data.data = sps_pps;
                         h264_data.frame_type = 0;
                         h264_data.pts = 0;
+                        h264_data.width = mWidthSource;
+                        h264_data.height = mHeightSource;
                         raop_rtp_mirror->callbacks.video_process(raop_rtp_mirror->callbacks.cls, &h264_data);
                     }
                     free(h264.picture_parameter_set);

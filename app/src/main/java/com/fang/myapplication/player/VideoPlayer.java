@@ -34,7 +34,6 @@ public class VideoPlayer extends Thread {
 		mSurface = surface;
 	}
 
-
     private static boolean decoderSupportsAndroidRLowLatency(MediaCodecInfo decoderInfo, String mimeType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {

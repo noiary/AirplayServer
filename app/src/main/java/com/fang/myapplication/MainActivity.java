@@ -12,6 +12,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
+
 public class MainActivity extends Activity {
 
     public static String TAG = "AIS-RAOP-Main";
@@ -43,7 +46,10 @@ public class MainActivity extends Activity {
         mTxtDevice = findViewById(R.id.txt_device);
         mSurfaceView = findViewById(R.id.surface);
         mAirPlayServer = new AirPlayServer();
-        mRaopServer = new RaopServer(mSurfaceView);
+        mRaopServer = new RaopServer(mSurfaceView, (width, height) -> {
+            runOnUiThread(() -> Util.INSTANCE.changeSurfaceSize(mSurfaceView, width, height));
+            return Unit.INSTANCE;
+        });
         mDNSNotify = new DNSNotify();
 
         MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);

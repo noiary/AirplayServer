@@ -11,11 +11,11 @@
 #include <malloc.h>
 #include <cstring>
 
-static JavaVM* g_JavaVM;
+static JavaVM *g_JavaVM;
 
 void OnRecvAudioData(void *observer, pcm_data_struct *data) {
     jobject obj = (jobject) observer;
-    JNIEnv* jniEnv = NULL;
+    JNIEnv *jniEnv = NULL;
     g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
     jclass cls = jniEnv->GetObjectClass(obj);
     jmethodID onRecvAudioDataM = jniEnv->GetMethodID(cls, "onRecvAudioData", "([SJ)V");
@@ -31,35 +31,32 @@ void OnRecvAudioData(void *observer, pcm_data_struct *data) {
 
 void OnRecvVideoData(void *observer, h264_decode_struct *data) {
     jobject obj = (jobject) observer;
-    JNIEnv* jniEnv = NULL;
+    JNIEnv *jniEnv = NULL;
     g_JavaVM->AttachCurrentThread(&jniEnv, NULL);
     jclass cls = jniEnv->GetObjectClass(obj);
-    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJ)V");
+    jmethodID onRecvVideoDataM = jniEnv->GetMethodID(cls, "onRecvVideoData", "([BIJJFF)V");
     jniEnv->DeleteLocalRef(cls);
     jbyteArray barr = jniEnv->NewByteArray(data->data_len);
     if (barr == NULL) return;
     jniEnv->SetByteArrayRegion(barr, (jint) 0, data->data_len, (jbyte *) data->data);
-    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type,
-                                         data->nTimeStamp, data->pts);
+    jniEnv->CallVoidMethod(obj, onRecvVideoDataM, barr, data->frame_type, data->nTimeStamp,
+                           data->pts, data->width, data->height);
     jniEnv->DeleteLocalRef(barr);
     g_JavaVM->DetachCurrentThread();
 }
 
 extern "C" void
-audio_process(void *cls, pcm_data_struct *data)
-{
+audio_process(void *cls, pcm_data_struct *data) {
     OnRecvAudioData(cls, data);
 }
 
 extern "C" void
-audio_set_volume(void *cls, void *opaque, float volume)
-{
+audio_set_volume(void *cls, void *opaque, float volume) {
 
 }
 
 extern "C" void
-video_process(void *cls, h264_decode_struct *data)
-{
+video_process(void *cls, h264_decode_struct *data) {
     OnRecvVideoData(cls, data);
 }
 
@@ -82,19 +79,20 @@ log_callback(void *cls, int level, const char *msg) {
             LOGE("%s", msg);
             break;
         }
-        default:break;
+        default:
+            break;
     }
 
 }
 
 extern "C" JNIEXPORT jint JNICALL
-JNI_OnLoad(JavaVM* vm, void* reserved) {
+JNI_OnLoad(JavaVM *vm, void *reserved) {
     g_JavaVM = vm;
     return JNI_VERSION_1_6;
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
+Java_com_fang_myapplication_RaopServer_start(JNIEnv *env, jobject object) {
     raop_t *raop;
     raop_callbacks_t raop_cbs;
     memset(&raop_cbs, 0, sizeof(raop_cbs));
@@ -121,13 +119,13 @@ Java_com_fang_myapplication_RaopServer_start(JNIEnv* env, jobject object) {
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_com_fang_myapplication_RaopServer_getPort(JNIEnv* env, jobject object, jlong opaque) {
+Java_com_fang_myapplication_RaopServer_getPort(JNIEnv *env, jobject object, jlong opaque) {
     raop_t *raop = (raop_t *) (void *) opaque;
     return raop_get_port(raop);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_fang_myapplication_RaopServer_stop(JNIEnv* env, jobject object, jlong opaque) {
+Java_com_fang_myapplication_RaopServer_stop(JNIEnv *env, jobject object, jlong opaque) {
     raop_t *raop = (raop_t *) (void *) opaque;
     jobject obj = (jobject) raop_get_callback_cls(raop);
     raop_destroy(raop);
